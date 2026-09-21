@@ -77,12 +77,16 @@ class DB:
             conn.close()
 
     @staticmethod
-    def SendMessage(message: str, user: str)
+    def SendMessage(userid: int, messagecontent: str, userlevel: int):
         conn = sqlite3.connect("lenore_database.db")
-        conn.execute(
-            "INSERT INTO messages(messageid, userid, messagecontent, userlevel) VALUES (?, ?, ?, ?)",
-            (messageid, userid, messagecontent, userlevel)
-        )
+        try: 
+            conn.execute(
+                "INSERT INTO messages(userid, messagecontent, userlevel) VALUES (?, ?, ?)", # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+                (userid, messagecontent, userlevel)
+            )
+            conn.commit()
+        finally:
+            conn.close()
 # --- Main: ------------------------------------------------------------------
 
 class Main:
