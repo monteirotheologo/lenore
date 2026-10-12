@@ -1,27 +1,29 @@
 from terminaltexteffects.effects.effect_binarypath import BinaryPath
 from terminaltexteffects.effects.effect_expand import Expand
+global username
+global password
 import os
 
 os.system('cls' if os.name == 'nt' else 'clear')
 
 LOGO_TEXT = """                     
-`7MMF'                                                                              
-  MM                                                                  ,;//'         
-  MM         .gP"Ya  `7MMpMMMb.   ,pW"Wq.  `7Mb,od8  .gP"Ya        ,;//'    pd""b.  
-  MM        ,M'   Yb   MM    MM  6W'   `Wb   MM' "' ,M'   Yb     ,//'      (O)  `8b 
-  MM      , 8M""""""   MM    MM  8M     M8   MM     8M""""""     `\\.           ,89 
-  MM     ,M YM.    ,   MM    MM  YA.   ,A9   MM     YM.    ,        `\\:.     ""Yb. 
-.JMMmmmmMMM  `Mbmmd' .JMML  JMML. `Ybmd9'  .JMML.    `Mbmmd'           `\\.      88 
+  `7MMF'                                                                              
+    MM                                                                  ,;//'         
+    MM         .gP"Ya  `7MMpMMMb.   ,pW"Wq.  `7Mb,od8  .gP"Ya        ,;//'    pd""b.  
+    MM        ,M'   Yb   MM    MM  6W'   `Wb   MM' "' ,M'   Yb     ,//'      (O)  `8b 
+    MM      , 8M""""""   MM    MM  8M     M8   MM     8M""""""     `\\.           ,89 
+    MM     ,M YM.    ,   MM    MM  YA.   ,A9   MM     YM.    ,        `\\:.     ""Yb. 
+  .JMMmmmmMMM  `Mbmmd' .JMML  JMML. `Ybmd9'  .JMML.    `Mbmmd'           `\\.      88 
                                                                            (O)  .M' 
                                                                             bmmmd'  
 
-┌── by: Matheus Barros ─────────────────────────────────────────────────────────────┐
-│                                                                                   │
-│ 1 -- | LOGIN                                                                      │
-│ 2 -- | REGISTER                                                                   │
-│ 3 -- | QUIT                                                                       │
-│                                                                                   │
-└───────────────────────────────────────────────────────────────────────────────────┘
+  ┌── by: Matheus Barros ─────────────────────────────────────────────────────────────┐
+  │                                                                                   │
+  │ 1 -- | LOGIN                                                                      │
+  │ 2 -- | REGISTER                                                                   │
+  │ 3 -- | QUIT                                                                       │
+  │                                                                                   │
+  └───────────────────────────────────────────────────────────────────────────────────┘
 """
 
 WELCOME_TEXT = """
@@ -34,27 +36,27 @@ WELCOME_TEXT = """
    \:\\:\\:\ \   \:\____/\   \:\/___/\   \:\_\ \ \   \:\_\ \ \   \. \  \  \ \   \:\____/\ 
     \_______\/    \_____\/    \_____\/    \_____\/    \_____\/    \__\/ \__\/    \_____\/ 
 
-┌── THE RULES ──────────────────────────────────────────────────────────────────────┐
-│                                                                                   │
-│ * this chat was created with the intention of give you the oportunity to share    │
-│   your ideas and talk about random stuff.                                         │
-│ * does not mean that you will not be punished if you disrespect the order of our  │ 
-│   members.                                                                        │
-│ * the creator of the chat liked the project so much that he decided to choose two │
-│   awesome administrators to rule the chat                                         │
-│                                                                                   │
-│       ┌───────────────────────────────────────────────────────────────────┐       │
-│       │                              ADMINS:                              │       │
-│       │ 1. Matheus Henrique [br] @troy                                    │       │
-│       │ 2. João Nunes [pt] @cogito                                        │       │
-│       │ 3. Martim Gabriel [pt] @mafanhoto                                 │       │
-│       └───────────────────────────────────────────────────────────────────┘       │
-│                                                                                   │
-│ 1 -- | DO NOT FLOOD                                                               │
-│ 2 -- | DO NOT BULLY                                                               │
-│ 3 -- | DO NOT SPAM                                                                │
-│                                                                                   │
-└───────────────────────────────────────────────────────────────────────────────────┘
+┌── THE RULES ──────────────────────────────────────────────────────────────────────────┐
+│                                                                                       │
+│ * this chat was created with the intention of give you the oportunity to share        │
+│   your ideas and talk about random stuff.                                             │
+│ * does not mean that you will not be punished if you disrespect the order of our      │   
+│   members.                                                                            │   
+│ * the creator of the chat liked the project so much that he decided to choose two     │
+│   awesome administrators to rule the chat                                             │
+│                                                                                       │
+│         ┌───────────────────────────────────────────────────────────────────┐         │
+│         │                              ADMINS:                              │         │    
+│         │ 1. Matheus Henrique [br] @troy                                    │         │   
+│         │ 2. João Nunes [pt] @cogito                                        │         │
+│         │ 3. Martim Gabriel [pt] @mafanhoto                                 │         │
+│         └───────────────────────────────────────────────────────────────────┘         │
+│                                                                                       │
+│ 1 -- | DO NOT FLOOD                                                                   │
+│ 2 -- | DO NOT BULLY                                                                   │
+│ 3 -- | DO NOT SPAM                                                                    │
+│                                                                                       │
+└───────────────────────────────────────────────────────────────────────────────────────┘
 """
 
 WELCOME = Expand(WELCOME_TEXT)
@@ -65,8 +67,17 @@ LOGO.terminal_config.canvas_height = -1
 LOGO.effect_config.movement_speed = 2
 
 import os
+import sys
+import socketio
 
-@staticmethod
+def my_prompt(prompt=""):
+    content = input(prompt)
+
+    sys.stdout.write("\033[F\033[K")
+    sys.stdout.flush()
+
+    return content
+
 def clear_screen():
     if os.name == "nt":
         os.system("cls")
@@ -75,15 +86,18 @@ def clear_screen():
     else:
         os.system("cls")
 
-import sys
-import socketio
-import server
+s = "https://practitioner-group-cherry-difficulties.trycloudflare.com"
 
-client = socketio.Client()
-s = "http://127.0.0.1:5555"
+client = socketio.Client(
+    logger=True,
+    engineio_logger=True,
+    reconnection=False
+)
+
+client.connect(s)
+
 
 is_logged_in = False
-sc_username = ""
 
 @client.event
 def connect():
@@ -93,65 +107,66 @@ def connect():
 def disconnect():
     print("[s] : disconnected from the server")
 
-@staticmethod
-def register():
-    username = input("username: ")
 
-    if username == "/exit":
+@client.on("new_message")
+def new_message(data):
+    if is_logged_in:
+        print(f"@{data['username']} | {data['content']}")
+
+@client.on("load_messages")
+def load_messages():
+    history = client.call("load_messages")
+    for message in history:
+        print(f"@{message['username']} | {message['content']}")
+
+def register():
+    username_checking = input("username: ")
+    password_checking = input("password: ")
+
+    result = client.call("register", {
+                "username": username_checking,
+                "password": password_checking
+            })
+    
+    if result["okay"]:
+        print("[s] : user created !")
+        input("((press enter))")
         LOGO.effect_config.movement_speed = 10
         main()
-
-    if username == None:
-        print("[s] : please enter your username")
-        register()
-    elif len(username)<3:
-        print("[s] : your username must be at least 3 characters")
-        register()
-    elif server.if_user_exists(username):
-        print("[s] : user already exists")
-        register()
     else:
-        password = input("password: ")
-        if password == None:
-            print("[s] : please enter your password")
-            register()
-        elif len(password)<3:
-            print("[s] : your password must be at least 3 characters")
-            register()
-        else:
-            server.create_user(username, password)
-            print("[s] : user created successfully")
-            LOGO.effect_config.movement_speed = 10
-            main()
+        print(f"[s] : {result.data["error"]}")
+        register()
 
 def login():
     global is_logged_in
-    global sc_username
-    username = input("username: ")
+    global username_checking
+    username_checking = input("username: ")
 
-    if username == "/exit":
+    if username_checking == "/exit":
         LOGO.effect_config.movement_speed = 500
         main()
 
-    if not server.if_user_exists(username):
-        print("[s] : user does not exist")
-        login()
-    else:
-        password = input("password: ")
-        if server.if_password_match(username, password):
-            is_logged_in = True
-            print("[s] : welcome!")
-            sc_username = username
-            LOGO.effect_config.movement_speed = 10
-            main()
-        else:
-            print("[s] : invalid username or password")
-            login()
+    password_checking = input("password: ")
 
+    result = client.call("login", {
+        "username": username_checking,
+        "password": password_checking
+    })
+
+    if result["okay"]:
+        is_logged_in = True
+        username = username_checking
+        print("[s] : welcome!")
+        LOGO.effect_config.movement_speed = 10
+        main()
+    else:
+        print("[s] : invalid username or password")
+        login()
 
 def main():
     clear_screen()
-
+    if not client.connected:
+        client.connect(s, transports=["polling"], wait_timeout=20)
     global is_logged_in
 
     if is_logged_in == False:
@@ -177,18 +192,21 @@ def main():
         for frame in WELCOME:
             terminal.print(frame)
 
-    client.connect(s)
+    load_messages()
 
     while True:
-        content = input("@: ")
-
-        sys.stdout.write("\033[1A\033[2K\r")
-        sys.stdout.flush()
+        content = my_prompt()
 
         if content == "/exit":
             break
 
-        server.msg(sc_username, content)
+        if not content.strip():
+            continue
+
+        client.emit("msg", {
+            "username" : username_checking,
+            "content" : content
+        })
 
 if __name__ == "__main__":
     main()
