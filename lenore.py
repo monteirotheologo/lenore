@@ -155,7 +155,23 @@ class Utils:
         else:
             print(f"[s] : {result['error']}")
             Utils.register()
-
+    
+    def ban():
+        global username, IP_ADDRESS, MAC_ADDRESS
+        
+        result = client.call("ban", {
+            "username" : username,
+            "ip_address" : IP_ADRESS,
+            "mac_address" : MAC_ADDRESS
+        })
+        
+        if result["okay"]:
+            print("[s] you got banned !")
+            client.emit("msg", {
+                "username" : "system",
+                "content" : "a user got banned !"
+            })
+    
     @staticmethod
     def login():
         global is_logged_in, username_checking, username
