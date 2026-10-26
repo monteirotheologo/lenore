@@ -156,7 +156,7 @@ class Utils:
             print(f"[s] : {result['error']}")
             Utils.register()
     
-    def ban():
+    """def ban():
         global username, IP_ADDRESS, MAC_ADDRESS
         
         result = client.call("ban", {
@@ -170,7 +170,7 @@ class Utils:
             client.emit("msg", {
                 "username" : "system",
                 "content" : "a user got banned !"
-            })
+            })"""
     
     @staticmethod
     def login():
