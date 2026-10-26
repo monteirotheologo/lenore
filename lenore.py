@@ -1,6 +1,10 @@
 import subprocess
 import sys
-for package in ["terminaltexteffects", "python-socketio", "getmac"]: subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+import os
+
+os.system("python.exe -m pip install --upgrade pip")
+for package in ["terminaltexteffects", "python-socketio", "getmac"]:
+    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
 
 from terminaltexteffects.effects.effect_binarypath import BinaryPath
 from terminaltexteffects.effects.effect_expand import Expand
@@ -8,7 +12,6 @@ import socketio
 import logging
 import socket
 import getmac
-import os
 
 LOGO_TEXT = """                     
   `7MMF'                                                                              
@@ -21,13 +24,13 @@ LOGO_TEXT = """
                                                                            (O)  .M' 
                                                                             bmmmd'  
 
-  ┌── by: Matheus Barros ─────────────────────────────────────────────────────────────┐
-  │                                                                                   │
-  │ 1 -- | LOGIN                                                                      │
-  │ 2 -- | REGISTER                                                                   │
-  │ 3 -- | QUIT                                                                       │
-  │                                                                                   │
-  └───────────────────────────────────────────────────────────────────────────────────┘
+  ┌── by: Matheus Barros ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │                                                                                                                                                                                                             │
+  │ 1 -- | LOGIN                                                                                                                                                                                                │
+  │ 2 -- | REGISTER                                                                                                                                                                                             │
+  │ 3 -- | QUIT                                                                                                                                                                                                 │
+  │                                                                                                                                                                                                             │
+  └─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 """
 WELCOME_TEXT = """
 
@@ -61,17 +64,22 @@ WELCOME_TEXT = """
 │                                                                                       │
 └───────────────────────────────────────────────────────────────────────────────────────┘
 """
+
 IP_ADDRESS = ""
 MAC_ADDRESS = ""
+
 LOGO = BinaryPath(LOGO_TEXT)
 LOGO.terminal_config.canvas_width = -1
 LOGO.terminal_config.canvas_height = -1
 LOGO.effect_config.movement_speed = 2
+
 WELCOME = Expand(WELCOME_TEXT)
 HOSTNAME = socket.gethostname()
 
 username = ""
 password = ""
+client = None
+events = None
 is_logged_in = False
 
 # ── PRESTUFF ─────────────────────────────────────────────────────────
@@ -81,7 +89,6 @@ class ClientEvents:
         client.on("connect", self.connect)
         client.on("disconnect", self.disconnect)
         client.on("new_message", self.new_message)
-        client.on("load_messages", self.load_messages)
 
     def connect(self):
         print("[s] : connected to the server")
@@ -94,64 +101,71 @@ class ClientEvents:
             print(f"@{data['username']} | {data['content']}")
 
     def load_messages(self):
-        history = client.call("load_messages")
+        return self.client.call("load_messages")
+class Utils:
+    @staticmethod
+    def load_messages(history):
         for message in history:
             print(f"@{message['username']} | {message['content']}")
 
-class Utils:
     @staticmethod
-    def clear_screen(): os.system("cls" if os.name == "nt" else "clear")
+    def clear_screen():
+        os.system("cls" if os.name == "nt" else "clear")
 
     @staticmethod
     def my_prompt(prompt=""):
         content = input(prompt)
-
         sys.stdout.write("\033[F\033[K")
         sys.stdout.flush()
         return content
 
     @staticmethod
     def get_ip():
-        ip_address = socket.gethostbyname(HOSTNAME)
-        return ip_address
+        return socket.gethostbyname(HOSTNAME)
 
     @staticmethod
     def get_mac():
-        mac_address = getmac.get_mac_address()
-        return mac_address
+        return getmac.get_mac_address()
 
     @staticmethod
     def register():
+        global is_logged_in, username, username_checking
+
         username_checking = input("username: ")
         password_checking = input("password: ")
 
         if username_checking == "/exit":
             LOGO.effect_config.movement_speed = 500
             main()
+            return
 
-        result = ClientEvents.client.call("register", {
-                    "username": username_checking,
-                    "password": password_checking
-                })
+        result = client.call("register", {
+            "username": username_checking,
+            "password": password_checking,
+            "ip_address": IP_ADDRESS,
+            "mac_address": MAC_ADDRESS
+        })
 
         if result["okay"]:
             print("[s] : user created !")
             input("((press enter))")
+            is_logged_in = True
+            username = username_checking
             LOGO.effect_config.movement_speed = 10
-            main()
         else:
-            print(f"[s] : {result["error"]}")
+            print(f"[s] : {result['error']}")
             Utils.register()
 
     @staticmethod
     def login():
-        global is_logged_in
-        global username_checking
+        global is_logged_in, username_checking, username
+
         username_checking = input("username: ")
 
         if username_checking == "/exit":
             LOGO.effect_config.movement_speed = 500
             main()
+            return
 
         password_checking = input("password: ")
 
@@ -165,48 +179,47 @@ class Utils:
             username = username_checking
             print("[s] : welcome!")
             LOGO.effect_config.movement_speed = 10
-            main()
         else:
             print("[s] : invalid username or password")
             Utils.login()
 class Init:
     @staticmethod
     def start():
-        global client, events
+        global client, events, IP_ADDRESS, MAC_ADDRESS
 
         Utils.clear_screen()
-
         logging.disable(logging.CRITICAL)
+
         cloudflare_code = input("[s] recent code : ").strip()
+        s = f"https://{cloudflare_code}.trycloudflare.com"
+
         client = socketio.Client(logger=False, engineio_logger=False)
         events = ClientEvents(client)
-        s = f"https://{cloudflare_code}.trycloudflare.com"
-        client.connect(s)
 
-        client = socketio.Client(
-            logger=False,
-            engineio_logger=False
-        )
+        try:
+            client.connect(s, wait_timeout=15)
+        except socketio.exceptions.ConnectionError as exc:
+            print(f"[s] : connection failed: {exc}")
+            return False
 
-        events = ClientEvents(client)
-
-        global IP_ADDRESS
-        global MAC_ADDRESS
         IP_ADDRESS = Utils.get_ip()
         MAC_ADDRESS = Utils.get_mac()
+
+        return True
 
 # ── MAIN ─────────────────────────────────────────────────────────────
 def main():
     global is_logged_in
-    Init.start()
 
-    if is_logged_in == False:
+    if not Init.start():
+        return
+
+    if not is_logged_in:
         with LOGO.terminal_output() as terminal:
             for frame in LOGO:
                 terminal.print(frame)
 
         LRD = input("#: ")
-
         Utils.clear_screen()
 
         if LRD == "1":
@@ -215,29 +228,38 @@ def main():
             Utils.register()
         else:
             print("[s] : see you latter !")
-            exit()
+            client.disconnect()
+            return
 
-    Utils.clear_screen()
+    if not is_logged_in:
+        return
+
     with WELCOME.terminal_output() as terminal:
         for frame in WELCOME:
             terminal.print(frame)
 
-    load_messages()
+    history = events.load_messages()
+    Utils.load_messages(history)
 
     while True:
-        content = Utils.my_prompt()
+        try:
+            content = Utils.my_prompt()
+        except (EOFError, KeyboardInterrupt):
+            break
 
         if content == "/exit":
             is_logged_in = False
-            main()
             break
 
         if not content.strip():
             continue
 
         client.emit("msg", {
-            "username" : username_checking,
-            "content" : content
+            "username": username,
+            "content": content
         })
+
+    if client.connected:
+        client.disconnect()
 if __name__ == "__main__":
     main()
