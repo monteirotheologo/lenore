@@ -160,21 +160,21 @@ class Utils:
             print(f"[s] : {result['error']}")
             Utils.register()
     
-    def ban():
-        global username, IP_ADDRESS, MAC_ADDRESS
+    def ban(target, username):
+        global username
         
         result = client.call("ban", {
-            "username" : username,
-            "ip_address" : IP_ADDRESS,
-            "mac_address" : MAC_ADDRESS
+            "username" : target,
+            "admin_username" : username
         })
         
         if result["okay"]:
-            print("[s] you got banned !")
             client.emit("msg", {
                 "username" : "SYSTEM",
-                "content" : f"{username} has been banned."
+                "content" : f"{target} has been banned."
             })
+        else:
+            print(result.error)
     
     @staticmethod
     def login():
@@ -271,8 +271,9 @@ def main():
             case ["/exit"]:
                 is_logged_in = False
                 break
-            case ["/ban", username]:
-                # nah, ill do it latter.
+            case ["/ban", target]:
+                Utils.ban(target, username)
+        
         if content == "/exit":
             is_logged_in = False
             break
