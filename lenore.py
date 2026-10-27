@@ -125,7 +125,11 @@ class Utils:
 
     @staticmethod
     def get_mac():
-        return getmac.get_mac_address()
+        try:
+            mac_address = getmac.get_mac_address()
+        except:
+            mac_address = ""
+        return mac_address
 
     @staticmethod
     def register():
@@ -156,21 +160,21 @@ class Utils:
             print(f"[s] : {result['error']}")
             Utils.register()
     
-    """def ban():
+    def ban():
         global username, IP_ADDRESS, MAC_ADDRESS
         
         result = client.call("ban", {
             "username" : username,
-            "ip_address" : IP_ADRESS,
+            "ip_address" : IP_ADDRESS,
             "mac_address" : MAC_ADDRESS
         })
         
         if result["okay"]:
             print("[s] you got banned !")
             client.emit("msg", {
-                "username" : "system",
-                "content" : "a user got banned !"
-            })"""
+                "username" : "SYSTEM",
+                "content" : f"{username} has been banned."
+            })
     
     @staticmethod
     def login():
@@ -263,6 +267,12 @@ def main():
         except (EOFError, KeyboardInterrupt):
             break
 
+        match content.split():
+            case ["/exit"]:
+                is_logged_in = False
+                break
+            case ["/ban", username]:
+                # nah, ill do it latter.
         if content == "/exit":
             is_logged_in = False
             break
