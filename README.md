@@ -1,2 +1,0 @@
-# lenore
-chat gostosinho

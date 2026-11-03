@@ -3,34 +3,37 @@ import sys
 import os
 
 os.system("python.exe -m pip install --upgrade pip")
-for package in ["terminaltexteffects", "python-socketio", "getmac"]:
+for package in ["terminaltexteffects", "python-socketio", "getmac", "rich"]:
     subprocess.check_call([sys.executable, "-m", "pip", "install", package])
 
 from terminaltexteffects.effects.effect_binarypath import BinaryPath
 from terminaltexteffects.effects.effect_expand import Expand
+from rich.panel import Panel
+from rich import print
+from time import asctime
 import socketio
 import logging
 import socket
 import getmac
 
 LOGO_TEXT = """                     
-  `7MMF'                                                                              
-    MM                                                                  ,;//'         
-    MM         .gP"Ya  `7MMpMMMb.   ,pW"Wq.  `7Mb,od8  .gP"Ya        ,;//'    pd""b.  
-    MM        ,M'   Yb   MM    MM  6W'   `Wb   MM' "' ,M'   Yb     ,//'      (O)  `8b 
-    MM      , 8M""""""   MM    MM  8M     M8   MM     8M""""""     `\\.           ,89 
-    MM     ,M YM.    ,   MM    MM  YA.   ,A9   MM     YM.    ,        `\\:.     ""Yb. 
-  .JMMmmmmMMM  `Mbmmd' .JMML  JMML. `Ybmd9'  .JMML.    `Mbmmd'           `\\.      88 
+`7MMF'                                                                              
+  MM                                                                  ,;//'         
+  MM         .gP"Ya  `7MMpMMMb.   ,pW"Wq.  `7Mb,od8  .gP"Ya        ,;//'    pd""b.  
+  MM        ,M'   Yb   MM    MM  6W'   `Wb   MM' "' ,M'   Yb     ,//'      (O)  `8b 
+  MM      , 8M""""""   MM    MM  8M     M8   MM     8M""""""     `\\.           ,89 
+  MM     ,M YM.    ,   MM    MM  YA.   ,A9   MM     YM.    ,        `\\:.     ""Yb. 
+.JMMmmmmMMM  `Mbmmd' .JMML  JMML. `Ybmd9'  .JMML.    `Mbmmd'           `\\.      88 
                                                                            (O)  .M' 
                                                                             bmmmd'  
 
-  ┌── by: Matheus Barros ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-  │                                                                                                                                                                                                             │
-  │ 1 -- | LOGIN                                                                                                                                                                                                │
-  │ 2 -- | REGISTER                                                                                                                                                                                             │
-  │ 3 -- | QUIT                                                                                                                                                                                                 │
-  │                                                                                                                                                                                                             │
-  └─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+┌── by: Matheus Barros ─────────────────────────────────────────────────────────────────┐
+│                                                                                       │
+│ 1 -- | LOGIN                                                                          │
+│ 2 -- | REGISTER                                                                       │
+│ 3 -- | QUIT                                                                           │
+│                                                                                       │
+└───────────────────────────────────────────────────────────────────────────────────────┘
 """
 WELCOME_TEXT = """
 
@@ -68,12 +71,12 @@ WELCOME_TEXT = """
 IP_ADDRESS = ""
 MAC_ADDRESS = ""
 
-LOGO = BinaryPath(LOGO_TEXT)
+LOGO = BinaryPath(LOGO_TEXT.center(89))
 LOGO.terminal_config.canvas_width = -1
 LOGO.terminal_config.canvas_height = -1
 LOGO.effect_config.movement_speed = 2
 
-WELCOME = Expand(WELCOME_TEXT)
+WELCOME = Expand(WELCOME_TEXT.center(89))
 HOSTNAME = socket.gethostname()
 
 username = ""
@@ -98,7 +101,14 @@ class ClientEvents:
 
     def new_message(self, data):
         if is_logged_in:
-            print(f"@{data['username']} | {data['content']}")
+            message_time = asctime()
+            print(Panel(
+                data['content'],
+                title=f"[orange_red1]@{data['username']}",
+                subtitle=f"[white]{message_time}",
+                title_align = "left",
+                subtitle_align = "right"
+            ))
 
     def load_messages(self):
         return self.client.call("load_messages")
@@ -106,7 +116,15 @@ class Utils:
     @staticmethod
     def load_messages(history):
         for message in history:
-            print(f"@{message['username']} | {message['content']}")
+            print(Panel(
+                message['content'],
+                title=f"[orange_red1]@{message['username']}",
+                subtitle=f"[white]{message['time']}",
+                title_align="left",
+                subtitle_align="right"
+            ))
+
+            # 202 - orange_red1 - #ff8700 - https://rich.readthedocs.io/en/stable/appendix/colors.html
 
     @staticmethod
     def clear_screen():
@@ -136,9 +154,15 @@ class Utils:
         global is_logged_in, username, username_checking
 
         username_checking = input("username: ")
-        password_checking = input("password: ")
 
         if username_checking == "/exit":
+            LOGO.effect_config.movement_speed = 500
+            main()
+            return
+
+        password_checking = input("password: ")
+
+        if password_checking == "/exit":
             LOGO.effect_config.movement_speed = 500
             main()
             return
@@ -159,23 +183,25 @@ class Utils:
         else:
             print(f"[s] : {result['error']}")
             Utils.register()
-    
-    def ban():
-        global username, IP_ADDRESS, MAC_ADDRESS
-        
+
+    def ban(target):
+        global username
+
         result = client.call("ban", {
-            "username" : username,
-            "ip_address" : IP_ADDRESS,
-            "mac_address" : MAC_ADDRESS
+            "username" : target,
+            "admin_username" : username
         })
-        
+
+        time = asctime()
         if result["okay"]:
-            print("[s] you got banned !")
             client.emit("msg", {
-                "username" : "SYSTEM",
-                "content" : f"{username} has been banned."
+                "username" : "[s]",
+                "content" : f"{target} has been banned.",
+                "time" : time
             })
-    
+        else:
+            print(result.error)
+
     @staticmethod
     def login():
         global is_logged_in, username_checking, username
@@ -271,8 +297,9 @@ def main():
             case ["/exit"]:
                 is_logged_in = False
                 break
-            case ["/ban", username]:
-                # nah, ill do it latter.
+            case ["/ban", target]:
+                Utils.ban(target)
+        
         if content == "/exit":
             is_logged_in = False
             break
@@ -280,10 +307,23 @@ def main():
         if not content.strip():
             continue
 
-        client.emit("msg", {
+        time = asctime()
+        result = client.call("msg", {
             "username": username,
-            "content": content
+            "content": content,
+            "time" : time
         })
+
+        time = asctime()
+        if result == None:
+            client.emit("msg", {
+                "username": username,
+                "content": content,
+                "time" : time
+            })
+        else:
+            print(result.error)
+
 
     if client.connected:
         client.disconnect()
