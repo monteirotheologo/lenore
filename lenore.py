@@ -317,6 +317,7 @@ def main():
         if result == None:
             continue
         else:
+            print("pau de macaco")
             print(result["error"])
 
 
