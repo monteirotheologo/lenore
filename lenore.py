@@ -314,15 +314,10 @@ def main():
             "time" : time
         })
 
-        time = asctime()
         if result == None:
-            client.emit("msg", {
-                "username": username,
-                "content": content,
-                "time" : time
-            })
+            continue
         else:
-            print(result.error)
+            print(result["error"])
 
 
     if client.connected:
