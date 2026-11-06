@@ -70,7 +70,6 @@ WELCOME_TEXT = """
 └───────────────────────────────────────────────────────────────────────────────────────┘
 """
 
-FAKE_HEADER = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"}
 SESSION = PromptSession(erase_when_done=True)
 IP_ADDRESS = ""
 MAC_ADDRESS = ""
@@ -247,7 +246,7 @@ class Init:
         events = ClientEvents(client)
 
         try:
-            client.connect(s, wait_timeout=6+7, transports=["polling"], headers = FAKE_HEADER) # O header falso burla o captcha do cloudflare pra fazer long-polling
+            client.connect(s, wait_timeout=6+7)
         except socketio.exceptions.ConnectionError as exc:
             print(f"[s] : connection failed: {exc}")
             return False
