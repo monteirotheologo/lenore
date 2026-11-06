@@ -3,9 +3,11 @@ import sys
 import os
 
 os.system("python.exe -m pip install --upgrade pip")
-for package in ["terminaltexteffects", "python-socketio", "getmac", "rich"]:
+for package in ["terminaltexteffects", "python-socketio", "getmac", "rich", "prompt_toolkit"]:
     subprocess.check_call([sys.executable, "-m", "pip", "install", package])
 
+from prompt_toolkit import PromptSession
+from prompt_toolkit.patch_stdout import patch_stdout
 from terminaltexteffects.effects.effect_binarypath import BinaryPath
 from terminaltexteffects.effects.effect_expand import Expand
 from rich.panel import Panel
@@ -131,11 +133,11 @@ class Utils:
         os.system("cls" if os.name == "nt" else "clear")
 
     @staticmethod
-    def my_prompt(prompt=""):
-        content = input(prompt)
-        sys.stdout.write("\033[F\033[K")
-        sys.stdout.flush()
-        return content
+    def my_prompt():
+        with patch_stdout():
+            session = PromptSession()
+            content = session.prompt()
+            return content
 
     @staticmethod
     def get_ip():
@@ -283,15 +285,20 @@ def main():
     with WELCOME.terminal_output() as terminal:
         for frame in WELCOME:
             terminal.print(frame)
-
+            
     history = events.load_messages()
     Utils.load_messages(history)
 
+    """
+    session = PromptSession()
+    
     while True:
-        try:
-            content = Utils.my_prompt()
-        except (EOFError, KeyboardInterrupt):
-            break
+        text = session.prompt("> ", auto_suggest=AutoSuggestFromHistory())
+        print(f"You said: {text}")
+    """
+
+    while True:
+        content = Utils.my_prompt()
 
         match content.split():
             case ["/exit"]:
