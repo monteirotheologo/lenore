@@ -97,10 +97,10 @@ class ClientEvents:
         client.on("new_message", self.new_message)
 
     def connect(self):
-        print("[s] : connected to the server")
+        print("[SYSTEM] : connected to the server")
 
     def disconnect(self):
-        print("[s] : disconnected from the server")
+        print("[SYSTEM] : disconnected from the server")
 
     def new_message(self, data):
         if is_logged_in:
@@ -178,15 +178,16 @@ class Utils:
         })
 
         if result["okay"]:
-            print("[s] : user created !")
+            print("[SYSTEM] : user created !")
             input("((press enter))")
             is_logged_in = True
             username = username_checking
             LOGO.effect_config.movement_speed = 10
         else:
-            print(f"[s] : {result['error']}")
+            print(f"[SYSTEM] : {result['error']}")
             Utils.register()
-
+            
+    @staticmethod
     def ban(target):
         global username
 
@@ -198,8 +199,46 @@ class Utils:
         time = asctime()
         if result["okay"]:
             client.emit("msg", {
-                "username" : "[s]",
+                "username" : "[SYSTEM]",
                 "content" : f"{target} has been banned.",
+                "time" : time
+            })
+        else:
+            print(result.error)
+            
+    @staticmethod
+    def setadmin(target):
+        global username
+
+        result = client.call("setadmin", {
+            "username" : target
+            "admin_username" : username
+        })
+        
+        time = asctime()
+        if result["okay"]:
+            client.emit("msg", {
+                "username" : "[SYSTEM]",
+                "content" : f"{target} is now an admin.",
+                "time" : time
+            })
+        else:
+            print(result.error)
+
+    @staticmethod
+    def removeadmin(target):
+        global username
+
+        result = client.call("removeadmin", {
+            "username" : target
+            "admin_username" : username
+        })
+        
+        time = asctime()
+        if result["okay"]:
+            client.emit("msg", {
+                "username" : "[SYSTEM]",
+                "content" : f"{target} is not an admin anymore.",
                 "time" : time
             })
         else:
@@ -226,11 +265,12 @@ class Utils:
         if result["okay"]:
             is_logged_in = True
             username = username_checking
-            print("[s] : welcome!")
+            print("[SYSTEM] : welcome!")
             LOGO.effect_config.movement_speed = 10
         else:
-            print("[s] : invalid username or password")
+            print("[SYSTEM] : invalid username or password")
             Utils.login()
+    
 class Init:
     @staticmethod
     def start():
@@ -239,7 +279,7 @@ class Init:
         Utils.clear_screen()
         logging.disable(logging.CRITICAL)
 
-        cloudflare_code = input("[s] recent code : ").strip()
+        cloudflare_code = input("[SYSTEM] recent code : ").strip()
         s = f"https://{cloudflare_code}.trycloudflare.com"
 
         client = socketio.Client(logger=False, engineio_logger=False)
@@ -248,7 +288,7 @@ class Init:
         try:
             client.connect(s, wait_timeout=6+7)
         except socketio.exceptions.ConnectionError as exc:
-            print(f"[s] : connection failed: {exc}")
+            print(f"[SYSTEM] : connection failed: {exc}")
             return False
 
         IP_ADDRESS = Utils.get_ip()
@@ -276,7 +316,7 @@ def main():
         elif LRD == "2":
             Utils.register()
         else:
-            print("[s] : see you latter !")
+            print("[SYSTEM] : see you latter !")
             client.disconnect()
             return
 
@@ -302,11 +342,19 @@ def main():
         content = Utils.my_prompt()
 
         match content.split():
+            
+            
             case ["/exit"]:
                 is_logged_in = False
                 break
+                
+
             case ["/ban", target]:
                 Utils.ban(target)
+            case ["/setadmin", target]:
+                Utils.setadmin(target)
+            case ["/removeadmin", target]:
+                Utils.removeadmin(target)
         
         if content == "/exit":
             is_logged_in = False
